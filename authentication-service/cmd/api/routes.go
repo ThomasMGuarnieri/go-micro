@@ -2,11 +2,13 @@ package main
 
 import (
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
 	"net/http"
 )
 
 func (app *Config) routes() http.Handler {
+	// External library for route management
 	mux := chi.NewRouter()
 
 	mux.Use(cors.Handler(cors.Options{
@@ -18,5 +20,8 @@ func (app *Config) routes() http.Handler {
 		MaxAge:           300,
 	}))
 
+	mux.Use(middleware.Heartbeat("/ping"))
+
+	mux.Post("/authenticate", app.Authenticate)
 	return mux
 }
