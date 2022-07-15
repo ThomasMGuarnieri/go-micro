@@ -15,6 +15,15 @@ services:
       mode: replicated
       replicas: 1
 
+  logger-service:
+    build:
+      context: ./logger-service
+      dockerfile: logger-service.dockerfile
+    restart: always
+    deploy:
+      mode: replicated
+      replicas: 1
+
   authentication-service:
     build:
       context: ./authentication-service
@@ -27,6 +36,24 @@ services:
       replicas: 1
     environment:
       DSN: "host=postgres port=5432 user=postgres password=password dbname=postgres sslmode=disable timezone=UTC connect_timeout=5"
+
+  mailer-service:
+    build:
+      context: ./mail-service
+      dockerfile: mail-service.dockerfile
+    restart: always
+    deploy:
+      mode: replicated
+      replicas: 1
+    environment:
+      MAIL_DOMAIN: localhost
+      MAIL_HOST: mailhog
+      MAIL_PORT: 1025
+      MAIL_ENCRYPTION: none
+      MAIL_USERNAME: ""
+      MAIL_PASSWORD: ""
+      MAIL_FROM_NAME: "Thomas Guarnieri"
+      MAIL_FROM_ADDRESS: "thomasmguarnieri@gmail.com"
 
   postgres:
     image: 'postgres:14.2'
@@ -41,3 +68,20 @@ services:
       POSTGRES_DB: users
     volumes:
       - ./db-data/postgres/:/var/lib/postgresql/data/
+
+  mongo:
+    image: 'mongo:4.2.16-bionic'
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: logs
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password
+    volumes:
+      - ./db-data/mongo/:/data/db
+
+  mailhog:
+    image: 'mailhog/mailhog:latest'
+    ports:
+      - "1025:1025"
+      - "8025:8025"
